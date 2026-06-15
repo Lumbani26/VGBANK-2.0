@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Village Bank — Community Loan Tracker</title>
+    <link rel="stylesheet" href="village-bank.css" />
+  </head>
+  <body>
+    <header>
+      <div class="header-brand">
+        <div class="brand-icon">T</div>
+        <div>
+          <div class="brand-name">tsogolo</div>
+          <div class="brand-sub">Loan Tracker</div>
+        </div>
+      </div>
+      <div class="week-badge" id="header-week">Week 0 of 14</div>
+    </header>
+
+    <main>
+      <!-- Modal for member details -->
+      <div
+        class="modal-overlay"
+        id="member-modal"
+        onclick="if (event.target === this) closeModal();"
+      >
+        <div class="modal">
+          <div class="modal-title" id="modal-title">Member Details</div>
+          <div id="modal-body"></div>
+          <div class="modal-actions">
+            <button class="secondary" onclick="closeModal()">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loan modal -->
+      <div
+        class="modal-overlay"
+        id="loan-modal"
+        onclick="if (event.target === this) closeLoanModal();"
+      >
+        <div class="modal">
+          <div class="modal-title">Issue Loan</div>
+          <div id="loan-modal-body"></div>
+        </div>
+      </div>
+
+      <!-- Repay modal -->
+      <div
+        class="modal-overlay"
+        id="repay-modal"
+        onclick="if (event.target === this) closeRepayModal();"
+      >
+        <div class="modal">
+          <div class="modal-title">Record Repayment</div>
+          <div id="repay-modal-body"></div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('dashboard')">
+          Dashboard
+        </button>
+        <button class="tab" onclick="showTab('members')">Members</button>
+        <button class="tab" onclick="showTab('loans')">Loans</button>
+        <button class="tab" onclick="showTab('weekly')">Weekly Log</button>
+        <button class="tab" onclick="showTab('sharing')">
+          End-of-Cycle Share
+        </button>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="view active" id="view-dashboard">
+        <div class="stats-grid" id="dash-stats"></div>
+        <div class="section-header">
+          <span class="section-title">Advance Week</span>
+        </div>
+        <div
+          class="card"
+          style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap"
+        >
+          <div style="flex: 1; min-width: 200px">
+            <div
+              style="font-size: 13px; color: var(--text2); margin-bottom: 4px"
+            >
+              Move to next week to record contributions and trigger loan
+              maturity checks.
+            </div>
+          </div>
+          <button onclick="advanceWeek()">
+            Advance to Week <span id="next-week-btn">1</span> →
+          </button>
+        </div>
+        <div id="dash-alerts" style="margin-top: 12px"></div>
+        <div class="section-header" style="margin-top: 20px">
+          <span class="section-title">Active Loans</span>
+        </div>
+        <div id="dash-loans"></div>
+      </div>
+
+      <!-- MEMBERS -->
+      <div class="view" id="view-members">
+        <div class="section-header">
+          <span class="section-title">Members</span>
+          <button onclick="openAddMember()">+ Add Member</button>
+        </div>
+        <div
+          class="card"
+          id="add-member-form"
+          style="display: none; margin-bottom: 16px"
+        >
+          <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px">
+            New Member
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input
+                type="text"
+                id="new-member-name"
+                placeholder="e.g. Grace Tembo"
+              />
+            </div>
+            <div class="form-group">
+              <label>Phone (optional)</label>
+              <input
+                type="text"
+                id="new-member-phone"
+                placeholder="e.g. 0999 123 456"
+              />
+            </div>
+            <button onclick="addMember()">Add</button>
+            <button class="secondary" onclick="closeAddMember()">Cancel</button>
+          </div>
+        </div>
+        <div id="members-table"></div>
+      </div>
+
+      <!-- LOANS -->
+      <div class="view" id="view-loans">
+        <div class="section-header">
+          <span class="section-title">All Loans</span>
+          <button onclick="openIssueLoan()">+ Issue Loan</button>
+        </div>
+        <div id="loans-table"></div>
+      </div>
+
+      <!-- WEEKLY LOG -->
+      <div class="view" id="view-weekly">
+        <div class="section-header">
+          <span class="section-title">Weekly Contributions</span>
+          <div class="week-nav">
+            <button onclick="navWeek(-1)">&#8592;</button>
+            <span id="week-nav-label">Week 1</span>
+            <button onclick="navWeek(1)">&#8594;</button>
+          </div>
+        </div>
+        <div id="weekly-table"></div>
+      </div>
+
+      <!-- SHARING -->
+      <div class="view" id="view-sharing">
+        <div class="section-header">
+          <span class="section-title">End-of-Cycle Distribution</span>
+        </div>
+        <div id="sharing-content"></div>
+      </div>
+    </main>
+
+    <script src="village-bank.js"></script>
+  </body>
+</html>

@@ -597,7 +597,7 @@ function markPaid(mid, week) {
 function renderShare() {
   const el = document.getElementById("share-body");
   if (state.currentWeek < TOTAL_WEEKS) {
-    el.innerHTML = `<div class="alert aa">Cycle ends at Week 14. Currently at Week ${state.currentWeek}.</div>`;
+    el.innerHTML = `<div class="alert aa">Cycle ends at Week 20. Currently at Week ${state.currentWeek}.</div>`;
     return;
   }
   if (!state.members.length) {

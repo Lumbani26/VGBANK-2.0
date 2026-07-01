@@ -6,165 +6,252 @@
     <title>Village Bank — Community Loan Tracker</title>
     <link rel="stylesheet" href="village-bank.css" />
   </head>
-  <body>
-    <header>
-      <div class="header-brand">
-        <div class="brand-icon">T</div>
-        <div>
-          <div class="brand-name">tsogolo 1.0</div>
-          <div class="brand-sub">Loan Tracker</div>
+  <body class="viewer">
+    <!-- ═══ AUTH SCREEN ═══════════════════════════════════════════ -->
+    <div id="auth-screen">
+      <div class="auth-card">
+        <div class="auth-icon">VB</div>
+        <div class="auth-h">Village Bank</div>
+        <div class="auth-sub">Community Loan Tracker</div>
+        <div class="fg" style="margin-bottom: 10px">
+          <label>Admin Password</label>
+          <input
+            type="password"
+            id="auth-pw"
+            placeholder="Leave blank to view only"
+            onkeydown="if (event.key === 'Enter') doLogin();"
+          />
+        </div>
+        <button style="width: 100%" onclick="doLogin()">Continue</button>
+        <div class="auth-err" id="auth-err"></div>
+        <div class="auth-or">
+          <a onclick="asViewer()">Continue as viewer (read-only)</a>
         </div>
       </div>
-      <div class="week-badge" id="header-week">Week 0 of 14</div>
+    </div>
+
+    <!-- ═══ MODALS ════════════════════════════════════════════════ -->
+    <!-- Change password -->
+    <div
+      class="mo"
+      id="pw-mo"
+      onclick="if (event.target === this) closePwMo();"
+    >
+      <div class="mbox">
+        <div class="mtitle">Change Admin Password</div>
+        <div class="fg" style="margin-bottom: 10px">
+          <label>Current Password</label><input type="password" id="pw-cur" />
+        </div>
+        <div class="fg" style="margin-bottom: 10px">
+          <label>New Password (min 4 chars)</label
+          ><input type="password" id="pw-new" />
+        </div>
+        <div class="fg" style="margin-bottom: 10px">
+          <label>Confirm New Password</label
+          ><input type="password" id="pw-cf" />
+        </div>
+        <div class="auth-err" id="pw-err"></div>
+        <div class="mact">
+          <button class="sec" onclick="closePwMo()">Cancel</button
+          ><button onclick="savePw()">Save</button>
+        </div>
+      </div>
+    </div>
+    <!-- Clear data -->
+    <div
+      class="mo"
+      id="clear-mo"
+      onclick="if (event.target === this) closeClearMo();"
+    >
+      <div class="mbox">
+        <div class="mtitle">⚠ Clear All Data</div>
+        <p style="margin-bottom: 14px; color: var(--tx2)">
+          This will permanently delete all members, loans, contributions, and
+          reset the week counter. This cannot be undone.
+        </p>
+        <div class="fg" style="margin-bottom: 10px">
+          <label>Type <strong>CLEAR</strong> to confirm</label
+          ><input type="text" id="clear-confirm" placeholder="CLEAR" />
+        </div>
+        <div class="mact">
+          <button class="sec" onclick="closeClearMo()">Cancel</button
+          ><button class="red" onclick="doClear()">Clear All Data</button>
+        </div>
+      </div>
+    </div>
+    <!-- Member detail -->
+    <div
+      class="mo"
+      id="mem-mo"
+      onclick="if (event.target === this) closeMemMo();"
+    >
+      <div class="mbox">
+        <div class="mtitle" id="mem-mo-title">Member</div>
+        <div id="mem-mo-body"></div>
+        <div class="mact">
+          <button class="sec" onclick="closeMemMo()">Close</button>
+        </div>
+      </div>
+    </div>
+    <!-- Issue loan -->
+    <div
+      class="mo"
+      id="loan-mo"
+      onclick="if (event.target === this) closeLoanMo();"
+    >
+      <div class="mbox">
+        <div class="mtitle">Issue Loan</div>
+        <div id="loan-mo-body"></div>
+      </div>
+    </div>
+    <!-- Repay -->
+    <div
+      class="mo"
+      id="repay-mo"
+      onclick="if (event.target === this) closeRepayMo();"
+    >
+      <div class="mbox">
+        <div class="mtitle">Record Repayment</div>
+        <div id="repay-mo-body"></div>
+      </div>
+    </div>
+
+    <!-- ═══ HEADER ════════════════════════════════════════════════ -->
+    <header>
+      <div class="hbrand">
+        <div class="hicon">VB</div>
+        <div>
+          <div class="hname">Village Bank</div>
+          <div class="hsub">Community Loan Tracker</div>
+        </div>
+      </div>
+      <div class="hright">
+        <span class="wbadge" id="hweek">Week 0 of 14</span>
+        <span class="rpill viewer" id="rpill">Viewer</span>
+        <button class="hbtn ao" id="lock-btn" onclick="lockApp()">
+          🔒 Lock
+        </button>
+        <button
+          class="hbtn"
+          id="login-btn"
+          onclick="showAuth()"
+          style="display: none"
+        >
+          🔑 Admin Login
+        </button>
+        <button class="hbtn ao" onclick="openPwMo()">⚙ Password</button>
+        <button
+          class="hbtn ao red"
+          onclick="openClearMo()"
+          style="border-color: var(--r600); color: var(--r600)"
+        >
+          🗑 Clear Data
+        </button>
+      </div>
     </header>
 
+    <!-- ═══ MAIN ══════════════════════════════════════════════════ -->
     <main>
-      <!-- Modal for member details -->
-      <div
-        class="modal-overlay"
-        id="member-modal"
-        onclick="if (event.target === this) closeModal();"
-      >
-        <div class="modal">
-          <div class="modal-title" id="modal-title">Member Details</div>
-          <div id="modal-body"></div>
-          <div class="modal-actions">
-            <button class="secondary" onclick="closeModal()">Close</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Loan modal -->
-      <div
-        class="modal-overlay"
-        id="loan-modal"
-        onclick="if (event.target === this) closeLoanModal();"
-      >
-        <div class="modal">
-          <div class="modal-title">Issue Loan</div>
-          <div id="loan-modal-body"></div>
-        </div>
-      </div>
-
-      <!-- Repay modal -->
-      <div
-        class="modal-overlay"
-        id="repay-modal"
-        onclick="if (event.target === this) closeRepayModal();"
-      >
-        <div class="modal">
-          <div class="modal-title">Record Repayment</div>
-          <div id="repay-modal-body"></div>
-        </div>
+      <div class="vbanner gone" id="vbanner">
+        🔒 Read-only view — contact the admin to make changes.
       </div>
 
       <div class="tabs">
-        <button class="tab active" onclick="showTab('dashboard')">
-          Dashboard
-        </button>
+        <button class="tab active" onclick="showTab('dash')">Dashboard</button>
         <button class="tab" onclick="showTab('members')">Members</button>
         <button class="tab" onclick="showTab('loans')">Loans</button>
-        <button class="tab" onclick="showTab('weekly')">Weekly Log</button>
-        <button class="tab" onclick="showTab('sharing')">
-          End-of-Cycle Share
-        </button>
+        <button class="tab" onclick="showTab('weekly')">Weekly</button>
+        <button class="tab" onclick="showTab('share')">Share</button>
       </div>
 
       <!-- DASHBOARD -->
-      <div class="view active" id="view-dashboard">
-        <div class="stats-grid" id="dash-stats"></div>
-        <div class="section-header">
-          <span class="section-title">Advance Week</span>
-        </div>
+      <div class="view on" id="view-dash">
+        <div class="sgrid" id="d-stats"></div>
         <div
-          class="card"
+          class="card ao"
           style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap"
         >
-          <div style="flex: 1; min-width: 200px">
-            <div
-              style="font-size: 13px; color: var(--text2); margin-bottom: 4px"
-            >
-              Move to next week to record contributions and trigger loan
-              maturity checks.
-            </div>
+          <div
+            style="
+              flex: 1;
+              min-width: 180px;
+              font-size: 13px;
+              color: var(--tx2);
+            "
+          >
+            Advance the week to record contributions and check loan maturity.
           </div>
           <button onclick="advanceWeek()">
-            Advance to Week <span id="next-week-btn">1</span> →
+            Advance to Week <span id="d-nextw">1</span> →
           </button>
         </div>
-        <div id="dash-alerts" style="margin-top: 12px"></div>
-        <div class="section-header" style="margin-top: 20px">
-          <span class="section-title">Active Loans</span>
+        <div id="d-alerts" style="margin-top: 11px"></div>
+        <div class="sh" style="margin-top: 18px">
+          <span class="st">Active Loans</span>
         </div>
-        <div id="dash-loans"></div>
+        <div id="d-loans"></div>
       </div>
 
       <!-- MEMBERS -->
       <div class="view" id="view-members">
-        <div class="section-header">
-          <span class="section-title">Members</span>
-          <button onclick="openAddMember()">+ Add Member</button>
+        <div class="sh">
+          <span class="st">Members</span>
+          <button class="ao" onclick="toggleAddMember()">+ Add Member</button>
         </div>
         <div
-          class="card"
-          id="add-member-form"
-          style="display: none; margin-bottom: 16px"
+          class="card ao"
+          id="add-mem-card"
+          style="display: none; margin-bottom: 14px"
         >
-          <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px">
+          <div style="font-size: 14px; font-weight: 500; margin-bottom: 11px">
             New Member
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Full Name</label>
-              <input
-                type="text"
-                id="new-member-name"
-                placeholder="e.g. Grace Tembo"
-              />
+          <div class="frow">
+            <div class="fg">
+              <label>Full Name</label
+              ><input type="text" id="nm-name" placeholder="e.g. Grace Tembo" />
             </div>
-            <div class="form-group">
-              <label>Phone (optional)</label>
-              <input
+            <div class="fg">
+              <label>Phone (optional)</label
+              ><input
                 type="text"
-                id="new-member-phone"
+                id="nm-phone"
                 placeholder="e.g. 0999 123 456"
               />
             </div>
             <button onclick="addMember()">Add</button>
-            <button class="secondary" onclick="closeAddMember()">Cancel</button>
+            <button class="sec" onclick="toggleAddMember()">Cancel</button>
           </div>
         </div>
-        <div id="members-table"></div>
+        <div id="mem-list"></div>
       </div>
 
       <!-- LOANS -->
       <div class="view" id="view-loans">
-        <div class="section-header">
-          <span class="section-title">All Loans</span>
-          <button onclick="openIssueLoan()">+ Issue Loan</button>
+        <div class="sh">
+          <span class="st">All Loans</span>
+          <button class="ao" onclick="openIssueLoan(null)">+ Issue Loan</button>
         </div>
-        <div id="loans-table"></div>
+        <div id="loan-list"></div>
       </div>
 
-      <!-- WEEKLY LOG -->
+      <!-- WEEKLY -->
       <div class="view" id="view-weekly">
-        <div class="section-header">
-          <span class="section-title">Weekly Contributions</span>
-          <div class="week-nav">
-            <button onclick="navWeek(-1)">&#8592;</button>
-            <span id="week-nav-label">Week 1</span>
-            <button onclick="navWeek(1)">&#8594;</button>
+        <div class="sh">
+          <span class="st">Weekly Contributions</span>
+          <div class="wnav">
+            <button onclick="navW(-1)">←</button>
+            <span id="wk-label">Week 1</span>
+            <button onclick="navW(1)">→</button>
           </div>
         </div>
-        <div id="weekly-table"></div>
+        <div id="wk-table"></div>
       </div>
 
-      <!-- SHARING -->
-      <div class="view" id="view-sharing">
-        <div class="section-header">
-          <span class="section-title">End-of-Cycle Distribution</span>
-        </div>
-        <div id="sharing-content"></div>
+      <!-- SHARE -->
+      <div class="view" id="view-share">
+        <div class="sh"><span class="st">End-of-Cycle Distribution</span></div>
+        <div id="share-body"></div>
       </div>
     </main>
 
